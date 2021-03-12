@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String
+from geometry_msgs.msg import Pose, PoseWithCovariance
+from nav_msgs.msg import Odometry
 
 import ast
 
@@ -16,20 +18,24 @@ def lm_callback(data):
     # (this took a long time to figure out)
     datalist =  ast.literal_eval(data[1:-1])
 
-    print "<---- LANDMARK READ ---->" 
-    print datalist
+    print "<---- LANDMARK READ ---->" + " (success)"
+    #print datalist
+
+# def gps_callback(data):
+#     """to parse gps data as provided by a String message type"""
+#     data = str(data)[5:-1].replace('"','').strip().replace("[ ","[").replace(" ",",")
+#     data = ast.literal_eval(data)
+#     print  "<==== GPS READ ====>"
+#     print  data
 
 def gps_callback(data):
-    data = str(data)[5:-1].replace('"','').strip().replace("[ ","[").replace(" ",",")
-    data = ast.literal_eval(data)
-    print  "<==== GPS READ ====>"
-    print  data
+    print  "<==== GPS READ ====>" + " (success: [{0}, {1}])".format(data.pose.pose.position.x, data.pose.pose.position.y)
 
 def VicParkListener():
     rospy.init_node("VicParkListener", anonymous=True)
     rospy.Subscriber("landmarks", String, lm_callback)
 
-    rospy.Subscriber("gps", String, gps_callback)
+    rospy.Subscriber("gps", Odometry, gps_callback)
     rospy.spin()
 if __name__ == "__main__":
     VicParkListener()
