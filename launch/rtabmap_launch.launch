@@ -1,0 +1,8 @@
+<launch>
+<node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" args="-d">
+   <!-- MAPPING MODE -->
+   <param name="Optimizer/Iterations" type="int" value="50"/>
+   <!-- LOCALISATION MODE -->
+   <!-- <param name="Mem/IncrementalMemory" type="string" value="false"/> -->
+</node>
+</launch>
