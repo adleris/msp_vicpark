@@ -40,10 +40,17 @@ class MatlabImporter():
         import_landmarks = loadmat('export_landmarks.mat')
         self.landmarks = [ list(zip(ts[0], ts[1])) for ts in import_landmarks['data'][0]]
 
+
+        # laser data has 361 entries for each timestep representing a 180 degree arc
+        self.lsr = loadmat('aa3_lsr2.mat')
+        # discard the timestep data, it's always 0.213 or 0.214, and set to float to convert cm->m
+        self.lsr = self.lsr["LASER"].astype(dtype='float32')/100
+
         # counters for data stream
         self.dr_count  = 0
         self.gps_count = 0
         self.lm_count  = 0
+        self.lsr_count = 0
 
     def next_gps(self):
         """
@@ -82,6 +89,18 @@ class MatlabImporter():
         else:
             return None
 
+    def next_lsr(self):
+        """
+        return the next laser output
+        if there is no more data, return None
+        @return [ l1, l2, l3, ... ]
+        """
+        self.lsr_count += 1
+        if self.lsr_count <= len(self.lsr):
+            return self.lsr[self.lsr_count-1]
+        else:
+            return None
+
     def set_stream_count(self, **counts):
         """
         set the stream counter for the specified counter variable (ie change
@@ -99,6 +118,8 @@ class MatlabImporter():
                 self.gps_count = idx
             elif key == 'lms':
                 self.lm_count = idx
+            elif key == 'lsr':
+                self.lsr_count = idx
             else:
                 raise NameError("invalid counter name {}".format(key))
     
@@ -116,5 +137,7 @@ class MatlabImporter():
                 set_stream_count(gps=0)
             elif name == 'lms':
                 set_stream_count(lms=0)
+            elif name == 'lsr':
+                set_stream_count(lsr=0)
             else:
                 raise NameError("invalid counter name {}".format(name))
