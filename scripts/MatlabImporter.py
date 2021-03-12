@@ -54,7 +54,7 @@ class MatlabImporter():
         self.gps_count += 1
         if self.gps_count <= len(self.gps):
             # return self.gps[self.gps_count-1]
-            return self.gps_colstack[self.gps_count-1]
+            return self.gps[self.gps_count-1]
         else:
             return None
 
