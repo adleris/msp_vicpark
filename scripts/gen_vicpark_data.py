@@ -7,6 +7,8 @@ from sensor_msgs.msg import LaserScan
 
 import MatlabImporter
 
+PI_ON_2 = 1.57079632679
+
 def VicParkPublisher():
     MI = MatlabImporter.MatlabImporter()
     pub_lm = rospy.Publisher('landmarks', String, queue_size=1)
@@ -49,8 +51,8 @@ def VicParkPublisher():
         # generate Laser scans
         # set up LaserScan object
         ls = LaserScan()
-        ls.angle_min = 0.0
-        ls.angle_max = 180.0
+        ls.angle_min = -PI_ON_2
+        ls.angle_max = PI_ON_2
         ls.angle_increment = 0.5
         ls.range_max = 80.0
         ls.range_min = 0.0
