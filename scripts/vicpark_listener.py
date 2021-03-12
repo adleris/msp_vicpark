@@ -3,6 +3,7 @@ import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose, PoseWithCovariance
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
 
 import ast
 
@@ -31,11 +32,14 @@ def lm_callback(data):
 def gps_callback(data):
     print  "<==== GPS READ ====>" + " (success: [{0}, {1}])".format(data.pose.pose.position.x, data.pose.pose.position.y)
 
+def lsr_callback(data):
+    print "<:::: LASER READ ::::>" + " (success: {} values)".format(len(data.ranges))
+
 def VicParkListener():
     rospy.init_node("VicParkListener", anonymous=True)
     rospy.Subscriber("landmarks", String, lm_callback)
-
     rospy.Subscriber("gps", Odometry, gps_callback)
+    rospy.Subscriber("lsr", LaserScan, lsr_callback)
     rospy.spin()
 if __name__ == "__main__":
     VicParkListener()
