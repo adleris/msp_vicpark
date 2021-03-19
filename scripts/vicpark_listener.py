@@ -38,12 +38,16 @@ def lsr_callback(data):
 def dr_callback(data):
     print "<++++ DR READ ++++>" + " (success: [{0}, {1}])".format(data.twist.twist.linear.x,data.twist.twist.angular.x)
 
+def odom_callback(data):
+    print "<<<<< ODOM READ >>>>>"
+
 def VicParkListener():
     rospy.init_node("VicParkListener", anonymous=True)
-    rospy.Subscriber("landmarks", String, lm_callback)
-    rospy.Subscriber("gps", Odometry, gps_callback)
-    rospy.Subscriber("dr", Odometry, dr_callback)
-    rospy.Subscriber("lsr", LaserScan, lsr_callback)
+    rospy.Subscriber("VicPark/landmarks", String, lm_callback)
+    rospy.Subscriber("VicPark/gps", Odometry, gps_callback)
+    rospy.Subscriber("VicPark/dr", Odometry, dr_callback)
+    rospy.Subscriber("VicPark/scan", LaserScan, lsr_callback)
+    rospy.Subscriber("VicPark/odom", Odometry, odom_callback)
     rospy.spin()
 
 if __name__ == "__main__":

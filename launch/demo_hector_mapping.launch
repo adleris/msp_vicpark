@@ -11,7 +11,7 @@
   <arg name="rtabmapviz" default="false" />
   
   <!-- Choose hector_slam or icp_odometry for odometry -->
-  <arg name="hector" default="true" />
+  <arg name="hector" default="false" />
 
   <!-- If "hector" above is false, this option feeds wheel odometry to
        icp_odometry as guess ( to be more robust to corridor-like environments).
@@ -19,7 +19,7 @@
   <arg name="odom_guess" default="false" />
 
   <!-- Example with camera or not -->
-  <arg name="camera" default="true" />
+  <arg name="camera" default="false" />
 
   <!-- Example with camera or not -->
 

@@ -15,10 +15,11 @@ RATE = 0.214
 
 def VicParkPublisher():
     MI = MatlabImporter.MatlabImporter()
-    pub_lm  = rospy.Publisher('landmarks', String, queue_size=1)
-    pub_gps = rospy.Publisher('gps', Odometry, queue_size=1)
-    pub_dr  = rospy.Publisher('dr', Odometry, queue_size=1)
-    pub_lsr = rospy.Publisher('lsr', LaserScan, queue_size=1)
+    pub_lm  = rospy.Publisher('VicPark/landmarks', String, queue_size=1)
+    pub_gps = rospy.Publisher('VicPark/gps', Odometry, queue_size=1)
+    pub_dr  = rospy.Publisher('VicPark/dr', Odometry, queue_size=1)
+    pub_lsr = rospy.Publisher('VicPark/scan', LaserScan, queue_size=1)
+    pub_odom= rospy.Publisher('VicPark/odom', Odometry, queue_size=1)
     
     rospy.init_node('VicPark', anonymous=True)
     rate = rospy.Rate(1/RATE)
@@ -80,6 +81,13 @@ def VicParkPublisher():
 
         ls.ranges = MI.next_lsr()
         pub_lsr.publish(ls)
+
+
+        # splice together gps and dr into a single odometry message
+        full_odom = Odometry()
+        full_odom.twist = dr_twist_with_cov
+        full_odom.pose = gps_pose_with_cov
+        pub_odom.publish(full_odom)
 
 
         rate.sleep()
