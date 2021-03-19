@@ -10,6 +10,8 @@ from sensor_msgs.msg import LaserScan
 import MatlabImporter
 
 PI_ON_2 = 1.57079632679
+# RATE = 1
+RATE = 0.214
 
 def VicParkPublisher():
     MI = MatlabImporter.MatlabImporter()
@@ -19,7 +21,7 @@ def VicParkPublisher():
     pub_lsr = rospy.Publisher('lsr', LaserScan, queue_size=1)
     
     rospy.init_node('VicPark', anonymous=True)
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(1/RATE)
 
     # publish to all topics
     while not rospy.is_shutdown():
