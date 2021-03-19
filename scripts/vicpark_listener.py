@@ -30,16 +30,21 @@ def lm_callback(data):
 #     print  data
 
 def gps_callback(data):
-    print  "<==== GPS READ ====>" + " (success: [{0}, {1}])".format(data.pose.pose.position.x, data.pose.pose.position.y)
+    print "<==== GPS READ ====>" + " (success: [{0}, {1}])".format(data.pose.pose.position.x, data.pose.pose.position.y)
 
 def lsr_callback(data):
     print "<:::: LASER READ ::::>" + " (success: {} values)".format(len(data.ranges))
+
+def dr_callback(data):
+    print "<++++ DR READ ++++>" + " (success: [{0}, {1}])".format(data.twist.twist.linear.x,data.twist.twist.angular.x)
 
 def VicParkListener():
     rospy.init_node("VicParkListener", anonymous=True)
     rospy.Subscriber("landmarks", String, lm_callback)
     rospy.Subscriber("gps", Odometry, gps_callback)
+    rospy.Subscriber("dr", Odometry, dr_callback)
     rospy.Subscriber("lsr", LaserScan, lsr_callback)
     rospy.spin()
+
 if __name__ == "__main__":
     VicParkListener()

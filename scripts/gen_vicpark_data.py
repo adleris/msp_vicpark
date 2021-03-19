@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+import numpy as np
+
 import rospy
 from std_msgs.msg import String
-from geometry_msgs.msg import Pose, PoseWithCovariance
+from geometry_msgs.msg import Pose, PoseWithCovariance, Twist, TwistWithCovariance
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
@@ -11,10 +13,10 @@ PI_ON_2 = 1.57079632679
 
 def VicParkPublisher():
     MI = MatlabImporter.MatlabImporter()
-    pub_lm = rospy.Publisher('landmarks', String, queue_size=1)
-    pub_gps   = rospy.Publisher('gps', Odometry, queue_size=1)
-    pub_dr    = rospy.Publisher('dr', String, queue_size=1)
-    pub_lsr   = rospy.Publisher('lsr', LaserScan, queue_size=1)
+    pub_lm  = rospy.Publisher('landmarks', String, queue_size=1)
+    pub_gps = rospy.Publisher('gps', Odometry, queue_size=1)
+    pub_dr  = rospy.Publisher('dr', Odometry, queue_size=1)
+    pub_lsr = rospy.Publisher('lsr', LaserScan, queue_size=1)
     
     rospy.init_node('VicPark', anonymous=True)
     rate = rospy.Rate(1)
@@ -42,10 +44,25 @@ def VicParkPublisher():
         pub_gps.publish(gps_odom)
 
 
-        # generate DR odometry
+        # # generate DR odometry
+        # dr_data = MI.next_dr()
+        # # rospy.loginfo(dr_data)
+        # pub_dr.publish(str(dr_data))
+
+        # generate dr odometry
+        dr_twist = Twist()
+        dr_twist_with_cov = TwistWithCovariance()
+        dr_twist_with_cov.twist = dr_twist
+        dr_odom = Odometry()
+        dr_odom.twist = dr_twist_with_cov
+
         dr_data = MI.next_dr()
-        # rospy.loginfo(dr_data)
-        pub_dr.publish(str(dr_data))
+        dr_twist.linear.x  = dr_data[1] / np.sqrt(2)
+        dr_twist.linear.y  = dr_data[1] / np.sqrt(2)
+        dr_twist.angular.x = dr_data[2] / np.sqrt(2)
+        dr_twist.angular.y = dr_data[2] / np.sqrt(2)
+        # rospy.loginfo(dr_odom)
+        pub_dr.publish(dr_odom)
 
 
         # generate Laser scans
