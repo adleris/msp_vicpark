@@ -16,7 +16,7 @@
   <!-- If "hector" above is false, this option feeds wheel odometry to
        icp_odometry as guess ( to be more robust to corridor-like environments).
        If so, use original demo_mapping.bag containing wheel odometry! -->
-  <arg name="odom_guess" default="false" />
+  <arg name="odom_guess" default="true" />
 
   <!-- Example with camera or not -->
   <arg name="camera" default="false" />
@@ -56,9 +56,10 @@
   </node>
   
   <!-- If argument "hector" is false, we use rtabmap's icp odometry to generate odometry for us -->
+  <!-- LERIS maybe this stuff is wrong? I don't really get it -->
   <node unless="$(arg hector)" pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen" >
-     <remap from="scan"      to="/jn0/base_scan"/>
-     <remap from="odom"      to="/scanmatch_odom"/>
+     <remap from="VicPark/scan"      to="/jn0/base_scan"/>
+     <remap from="VicPark/odom"      to="/scanmatch_odom"/>
      <remap from="odom_info"      to="/rtabmap/odom_info"/>
 	  
      <param name="frame_id"        type="string" value="base_footprint"/>
@@ -135,6 +136,7 @@
   </group>
   
   <!-- Visualisation RVIZ -->
+  <!-- LERIS is this bit here wrong? (with the launch path)-->
   <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz" args="-d $(find rtabmap_ros)/launch/config/demo_robot_mapping.rviz" output="screen"/>
    <node if="$(arg camera)" pkg="nodelet" type="nodelet" name="points_xyzrgb" args="standalone rtabmap_ros/point_cloud_xyzrgb">
     <remap from="rgbd_image"      to="/rtabmap/rgbd_image"/>
