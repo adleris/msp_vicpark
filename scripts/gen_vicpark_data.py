@@ -8,6 +8,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
 import MatlabImporter
+from motion_model import ackerman_model
 
 PI_ON_2 = 1.57079632679
 # RATE = 1
@@ -60,10 +61,11 @@ def VicParkPublisher():
         dr_odom.twist = dr_twist_with_cov
 
         dr_data = MI.next_dr()
-        dr_twist.linear.x  = dr_data[1] / np.sqrt(2)
-        dr_twist.linear.y  = dr_data[1] / np.sqrt(2)
-        dr_twist.angular.x = dr_data[2] / np.sqrt(2)
-        dr_twist.angular.y = dr_data[2] / np.sqrt(2)
+        dx,dy,dtheta = ackerman_model(dr_data[2], dr_data[1], RATE)
+        dr_twist.linear.x  = dx/RATE
+        dr_twist.linear.y  = dy/RATE
+        dr_twist.angular.x = dtheta/RATE
+        dr_twist.angular.y = dtheta/RATE
         # rospy.loginfo(dr_odom)
         pub_dr.publish(dr_odom)
 
