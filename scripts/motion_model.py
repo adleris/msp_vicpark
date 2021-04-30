@@ -1,4 +1,6 @@
 # set up an ackerman model to parse the Victoria park data
+# implemented from:
+# http://www-personal.acfr.usyd.edu.au/nebot/experimental_data/modeling_info/Ute_modeling_info.htm
 import math
 
 # magic numbers from vehicle specs
