@@ -15,6 +15,6 @@ def ackerman_model(theta,v,dt):
 
     dx = dt * vc * math.cos(theta) - vc / L * math.tan(theta) * (a*math.sin(theta) + b*math.cos(theta))
     dy = dt * vc * math.sin(theta) + vc / L * math.tan(theta) * (a*math.cos(theta) - b*math.sin(theta))
-    dtheta = dt * vc/L*than(a)
+    dtheta = dt * vc/L*math.tan(a)
 
     return dx, dy, dtheta
