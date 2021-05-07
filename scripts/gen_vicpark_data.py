@@ -18,26 +18,21 @@ class CallbackController():
     """
     Act as publisher for the vicpark data, at varying rates
     """
-    TEST_RATE = 0.02
+    TEST_RATE = 0.2
+    TIMESTEP = TEST_RATE * 100  # I think this works based on the values in the time files, but I'm not 100%
+                                # do we need to sample faster?
 
     def __init__(self):
         self.MI = MatlabImporter.MatlabImporter()
-        self.pub_lm  = rospy.Publisher('VicPark/landmarks', String, queue_size=1)
-        self.pub_gps = rospy.Publisher('VicPark/gps', Odometry, queue_size=1)
-        self.pub_dr  = rospy.Publisher('VicPark/dr', Odometry, queue_size=1)
-        self.pub_lsr = rospy.Publisher('VicPark/scan', LaserScan, queue_size=1)
-        self.pub_odom= rospy.Publisher('VicPark/odom', Odometry, queue_size=1)
-
-        rospy.init_node('VicPark', anonymous=True)
 
         # store the next value to be generated so we can come back to it
-        self.next_lm   = MI.next_lm()
-        self.next_gps  = MI.next_gps()
-        self.next_dr   = MI.next_dr()
-        self.next_lsr  = MI.next_lsr()
+        # self.next_lm   = self.MI.next_lm()
+        self.next_gps  = self.MI.next_gps()
+        self.next_dr   = self.MI.next_dr()
+        self.next_lsr  = self.MI.next_lsr()
 
         # initialise to starting times in the dataset
-        self.lm_timer   = self.next_lm[0]  
+        # self.lm_timer   = self.next_lm[0]  
         self.gps_timer  = self.next_gps[0]
         self.dr_timer   = self.next_dr[0]
         self.lsr_timer  = self.next_lsr[0]
@@ -50,18 +45,26 @@ class CallbackController():
         """
         loop controller, iterates each callback function with period TEST_RATE to see if they're ready to publish
         """
-        rospy.Timer(rospy.Duration(1.0 / self.TEST_RATE), self.dr)
-        rospy.Timer(rospy.Duration(1.0 / self.TEST_RATE), self.gps)
-        rospy.Timer(rospy.Duration(1.0 / self.TEST_RATE), self.lm)
-        rospy.Timer(rospy.Duration(1.0 / self.TEST_RATE), self.lsr)
+        # self.pub_lm  = rospy.Publisher('VicPark/landmarks', String, queue_size=1)
+        self.pub_gps = rospy.Publisher('VicPark/gps', Odometry, queue_size=1)
+        self.pub_dr  = rospy.Publisher('VicPark/dr', Odometry, queue_size=1)
+        self.pub_lsr = rospy.Publisher('VicPark/scan', LaserScan, queue_size=1)
+        self.pub_odom= rospy.Publisher('VicPark/odom', Odometry, queue_size=1)
+
+        rospy.init_node('VicPark', anonymous=True)
+
+        rospy.Timer(rospy.Duration(self.TEST_RATE), self.dr)
+        rospy.Timer(rospy.Duration(self.TEST_RATE), self.gps)
+        # rospy.Timer(rospy.Duration(1.0 / self.TEST_RATE), self.lm)
+        rospy.Timer(rospy.Duration(self.TEST_RATE), self.lsr)
 
         rospy.spin()
 
 
     # define the callbacks for each data stream
     def dr(self, event):
-        self.dr_timer += self.TEST_RATE
-        if self.next_dr[0] >= self.dr_timer:
+        self.dr_timer += self.TIMESTEP
+        if self.next_dr[0] <= self.dr_timer:
             next_publish = self.next_dr
             self.next_dr = self.MI.next_dr()
 
@@ -81,14 +84,14 @@ class CallbackController():
             dr_twist.angular.x = dtheta/dt
             dr_twist.angular.y = dtheta/dt
 
-            pub_dr.publish(dr_odom)
+            self.pub_dr.publish(dr_odom)
 
             self.odom()
 
 
     def gps(self, event):
-        self.gps_timer += self.TEST_RATE
-        if self.next_gps[0] >= self.gps_timer:
+        self.gps_timer += self.TIMESTEP
+        if float(self.next_gps[0]) < self.gps_timer:
             next_publish = self.next_gps
             self.next_gps = self.MI.next_gps()
 
@@ -104,7 +107,7 @@ class CallbackController():
             gps_pose.position.x = next_publish[1]
             gps_pose.position.y = next_publish[2]
 
-            pub_gps.publish(gps_odom)
+            self.pub_gps.publish(gps_odom)
 
             self.odom()
 
@@ -113,8 +116,8 @@ class CallbackController():
         """
         broken as matlab data doesn't exportwith timestamp
         """
-        self.lm_timer += self.TEST_RATE
-        if self.next_lm[0] >= self.lm_timer:
+        self.lm_timer += self.TIMESTEP
+        if self.next_lm[0] <= self.lm_timer:
             next_publish = self.next_lm
             self.next_lm = self.MI.next_lm()
 
@@ -123,8 +126,8 @@ class CallbackController():
 
     
     def lsr(self, event):
-        self.lsr_timer += self.TEST_RATE
-        if self.next_lsr[0] >= self.lsr_timer:
+        self.lsr_timer += self.TIMESTEP
+        if self.next_lsr[0] <= self.lsr_timer:
             next_publish = self.next_lsr
             self.next_lsr = self.MI.next_lsr()
 
@@ -142,10 +145,10 @@ class CallbackController():
             ls.scan_time = dt
 
             ls.ranges = next_publish
-            pub_lsr.publish(ls)
+            self.pub_lsr.publish(ls)
 
 
-    def odom(self, event):
+    def odom(self):
         """
         grab stored data from gps and dr and put into a signle published object
         kinda works
@@ -155,7 +158,7 @@ class CallbackController():
             full_odom = Odometry()
             full_odom.twist = self.dr_twist_with_cov
             full_odom.pose = self.gps_pose_with_cov
-            pub_odom.publish(full_odom)
+            self.pub_odom.publish(full_odom)
 
 
 
