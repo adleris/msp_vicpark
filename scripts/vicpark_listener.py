@@ -5,50 +5,31 @@ from geometry_msgs.msg import Pose, PoseWithCovariance
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
+import matplotlib.pyplot as plt
 import ast
 
-def lm_callback(data):
-    # ugly but it works: parse the string representation of the list of tuples
-    # back into the appropriate data structure
-    #
-    # the strings being passed by ROS  have line breaks that have to be removed, 
-    # and there is a 'data: ' at the start too
-    data = str(data).replace('data: ','').replace('\\\n  \\','')#.replace('\n','').replace('\\','')
-    # we also need to scrub quotation marks at the start and end of the string 
-    # which are causing it to get parsed asa string not a list
-    # (this took a long time to figure out)
-    datalist =  ast.literal_eval(data[1:-1])
+def ekf_cb(data):
+    EKFP.xbuffer.append(data.pose.pose.position.x)
+    EKFP.ybuffer.append(data.pose.pose.position.y)
+    EKFP._plot_buffer()
 
-    print "<---- LANDMARK READ ---->" + " (success)"
-    #print datalist
-
-# def gps_callback(data):
-#     """to parse gps data as provided by a String message type"""
-#     data = str(data)[5:-1].replace('"','').strip().replace("[ ","[").replace(" ",",")
-#     data = ast.literal_eval(data)
-#     print  "<==== GPS READ ====>"
-#     print  data
-
-def gps_callback(data):
-    print "<==== GPS READ ====>" + " (success: [{0}, {1}])".format(data.pose.pose.position.x, data.pose.pose.position.y)
-
-def lsr_callback(data):
-    print "<:::: LASER READ ::::>" + " (success: {} values)".format(len(data.ranges))
-
-def dr_callback(data):
-    print "<++++ DR READ ++++>" + " (success: [{0}, {1}])".format(data.twist.twist.linear.x,data.twist.twist.angular.x)
-
-def odom_callback(data):
-    print "<<<<< ODOM READ >>>>>"
+class EKF_Printer():
+    def __init__(self):
+        self.xbuffer = []
+        self.ybuffer = []
+        plt.ion()
+    def _plot_buffer(self):
+        plt.plot(self.xbuffer, self.ybuffer, '.')
+        plt.draw()
+        plt.pause(0.001)
+    
 
 def VicParkListener():
+    
     rospy.init_node("VicParkListener", anonymous=True)
-    rospy.Subscriber("VicPark/landmarks", String, lm_callback)
-    rospy.Subscriber("VicPark/gps", Odometry, gps_callback)
-    rospy.Subscriber("VicPark/dr", Odometry, dr_callback)
-    rospy.Subscriber("VicPark/scan", LaserScan, lsr_callback)
-    rospy.Subscriber("VicPark/odom", Odometry, odom_callback)
+    rospy.Subscriber('odom_ekf', Odometry, ekf_cb)
     rospy.spin()
 
 if __name__ == "__main__":
+    EKFP = EKF_Printer()
     VicParkListener()
