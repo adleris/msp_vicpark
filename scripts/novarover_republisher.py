@@ -32,7 +32,7 @@ class Republisher():
         odom.pose.pose.position = Point()
 
         # get lat and long distance from "start" and convert to displacement in m
-        odom.pose.pose.position.x, odom.pose.pose.position.y = self.lat_lon_to_m_m(
+        odom.pose.pose.position.y, odom.pose.pose.position.x = self.lat_lon_to_m_m(
                                                                 data.latitude, data.longitude)
 
         self.pub.publish(odom)
