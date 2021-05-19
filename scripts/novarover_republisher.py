@@ -3,6 +3,7 @@ import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseWithCovariance,Point
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 from common.msg import GPSData
 import numpy as np
 
@@ -15,9 +16,10 @@ class Republisher():
     def __init__(self):
         rospy.init_node('novarover_republisher', anonymous=True)
 
-        self.pub = rospy.Publisher('/republisher/gps_data', Odometry, queue_size=1)
+        self.pub_gps = rospy.Publisher('/republisher/gps_data', Odometry, queue_size=1)
+        self.pub_imu = rospy.Publisher('/republisher/imu_data', Imu, queue_size=1)
 
-    def callback(self, data):
+    def gps_callback(self, data):
         # package up our message into a type readable by RViz
         odom = Odometry()
 
@@ -35,10 +37,19 @@ class Republisher():
         odom.pose.pose.position.y, odom.pose.pose.position.x = self.lat_lon_to_m_m(
                                                                 data.latitude, data.longitude)
 
-        self.pub.publish(odom)
+        self.pub_gps.publish(odom)
+    
+    def imu_callback(self, data):
+        """
+        republish the imu data to a new topic with a different TF frame
+        """
+        data.header.frame_id = "imu_link"
+        self.pub_imu.publish(data)
+
     
     def run(self):
-        rospy.Subscriber('/rover/gps_data', GPSData, self.callback)
+        rospy.Subscriber('/rover/gps_data', GPSData, self.gps_callback)
+        rospy.Subscriber('/rover/raw_imu1', Imu, self.imu_callback)
         rospy.spin()
 
     def lat_lon_to_m_m(self, lat, lon):
@@ -50,13 +61,11 @@ class Republisher():
         # more accurate calculation to take into account that we aren't on the equator
         lat_mid = (lat + self.START_LAT)/2.0
         m_per_degree_lat = 111132.954 - 559.822 * np.cos(2.0 * lat_mid) + 1.175*np.cos(4.0 * lat_mid)
-        m_per_degree_lon = (3.141592653359/180) * 6367449 * np.cos(lat_mid)
+        m_per_degree_lon = (np.pi/180) * 6367449 * np.cos(lat_mid)
 
         return lat_dist * m_per_degree_lat, lon_dist*m_per_degree_lon
 
         
-
-
 
 
 if __name__ == '__main__':

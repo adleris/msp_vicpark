@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /EKF Odometry1
         - /GPS Odometry1/Shape1
       Splitter Ratio: 0.5176470875740051
     Tree Height: 391
@@ -142,6 +141,8 @@ Visualization Manager:
           Value: true
         camera_link:
           Value: true
+        imu_link:
+          Value: true
         odom:
           Value: true
       Marker Scale: 1
@@ -152,7 +153,18 @@ Visualization Manager:
       Tree:
         base_link:
           odom:
-            {}
+            camera_link:
+              camera_color_frame:
+                camera_color_optical_frame:
+                  {}
+              camera_depth_frame:
+                camera_depth_optical_frame:
+                  {}
+              camera_infra1_frame:
+                camera_infra1_optical_frame:
+                  {}
+            imu_link:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -161,7 +173,7 @@ Visualization Manager:
       Enabled: true
       History Length: 1
       Name: Imu
-      Topic: ""
+      Topic: /republisher/imu_data
       Unreliable: false
       Value: true
   Enabled: true
@@ -192,7 +204,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.576736450195312
+      Distance: 40.59318923950195
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -207,10 +219,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.2197966575622559
+      Pitch: 1.144796371459961
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.5054023265838623
+      Yaw: 1.9604015350341797
     Saved: ~
 Window Geometry:
   Displays:
