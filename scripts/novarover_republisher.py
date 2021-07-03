@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import Header
-from geometry_msgs.msg import Pose, PoseWithCovariance,Point
+from geometry_msgs.msg import Pose, PoseWithCovariance,Point, Transform, TransformStamped, Quaternion, Vector3
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from common.msg import GPSData
@@ -18,6 +18,7 @@ class Republisher():
 
         self.pub_gps = rospy.Publisher('/republisher/gps_data', Odometry, queue_size=1)
         self.pub_imu = rospy.Publisher('/republisher/imu_data', Imu, queue_size=1)
+	self.pub_mag = rospy.Publisher('republisher/mag_data', TransformStamped, queue_size=1)
 
     def gps_callback(self, data):
         # package up our message into a type readable by RViz
@@ -46,10 +47,23 @@ class Republisher():
         data.header.frame_id = "imu_link"
         self.pub_imu.publish(data)
 
-    
+    def mag_callback(self, imu_data):
+	"""
+	subscribe to an Imu message and republish the orientation quaternion within
+	frame is set to base link
+	"""
+	result = TransformStamped()
+	result.transform = Transform()
+	result.transform.rotation = imu_data.orientation
+	result.transform.translation = Vector3()
+	result.transform.translation.x = np.random.rand()	# let's see if things move around
+	result.header.frame_id = "magnetometer_link"
+	self.pub_mag.publish(result)
+
     def run(self):
         rospy.Subscriber('/rover/gps_data', GPSData, self.gps_callback)
-        rospy.Subscriber('/rover/raw_imu1', Imu, self.imu_callback)
+        rospy.Subscriber('/rover/raw_imu0', Imu, self.imu_callback)
+        rospy.Subscriber('/rover/raw_imu0', Imu, self.mag_callback)
         rospy.spin()
 
     def lat_lon_to_m_m(self, lat, lon):
