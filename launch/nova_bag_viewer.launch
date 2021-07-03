@@ -15,8 +15,8 @@
     <!-- imu viewing -->
 <!--    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_link_broadcaster" args="0 1 0 0 0 0 1 base_link imu_link" /> -->
 
-    <!-- imu viewing -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_link_broadcaster" args="0 0 0 0 0 0 1 base_link magnetometer_link" />
+    <!-- magnetometer viewing -->
+    <!-- <node pkg="msp_vicpark" type="magnetometer.py" name="mag_link_broadcaster" /> -->
 
 
 </launch>

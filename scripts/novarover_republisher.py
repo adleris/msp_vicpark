@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import rospy
+import tf2_ros
+import tf2_msgs.msg
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseWithCovariance,Point, Transform, TransformStamped, Quaternion, Vector3
 from nav_msgs.msg import Odometry
@@ -18,7 +20,8 @@ class Republisher():
 
         self.pub_gps = rospy.Publisher('/republisher/gps_data', Odometry, queue_size=1)
         self.pub_imu = rospy.Publisher('/republisher/imu_data', Imu, queue_size=1)
-	self.pub_mag = rospy.Publisher('republisher/mag_data', TransformStamped, queue_size=1)
+#	self.pub_mag = rospy.Publisher('republisher/mag_data', tf2_msgs.msg.TFMessage, queue_size=1)
+	self.tf_br = tf2_ros.TransformBroadcaster()
 
     def gps_callback(self, data):
         # package up our message into a type readable by RViz
@@ -58,7 +61,11 @@ class Republisher():
 	result.transform.translation = Vector3()
 	result.transform.translation.x = np.random.rand()	# let's see if things move around
 	result.header.frame_id = "magnetometer_link"
-	self.pub_mag.publish(result)
+	result.header.stamp = rospy.Time.now()
+
+#	tfm = tf2_msgs.msg.TFMessage([result])
+#	self.pub_mag.publish(tfm)
+	self.tf_br.sendTransform(result)
 
     def run(self):
         rospy.Subscriber('/rover/gps_data', GPSData, self.gps_callback)
